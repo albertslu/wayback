@@ -1,69 +1,80 @@
-# React + TypeScript + Vite
+# Wayback Archive Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern web application for archiving websites and preserving digital content.
 
-Currently, two official plugins are available:
+## Development
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+```bash
+# Install dependencies
+npm install
 
-## Expanding the ESLint configuration
+# Start development server
+npm run dev
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+# Build for production
+npm run build
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Preview production build
+npm run preview
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Deployment to Vercel
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Option 1: Using Vercel Dashboard
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+1. Sign up or log in to [Vercel](https://vercel.com)
+2. Click "Add New" > "Project"
+3. Import your Git repository
+4. Configure the project:
+   - Framework Preset: Vite
+   - Root Directory: `frontend`
+   - Build Command: `npm run build`
+   - Output Directory: `dist`
+5. Add environment variables:
+   - `VITE_API_URL`: URL of your backend API (e.g., `https://your-backend-url.com/api`)
+6. Click "Deploy"
+
+### Option 2: Using Vercel CLI
+
+1. Install Vercel CLI:
+   ```bash
+   npm install -g vercel
+   ```
+
+2. Login to Vercel:
+   ```bash
+   vercel login
+   ```
+
+3. Deploy from the frontend directory:
+   ```bash
+   cd frontend
+   vercel
+   ```
+
+4. Follow the CLI prompts to configure your project
+5. For production deployment:
+   ```bash
+   vercel --prod
+   ```
+
+### Environment Variables
+
+Create a `.env` file in the frontend directory with the following variables:
+
 ```
+VITE_API_URL=https://your-backend-url.com/api
+```
+
+For local development, you can use:
+```
+VITE_API_URL=http://localhost:3001/api
+```
+
+## Features
+
+- Complete website archiving
+- Version history tracking
+- Permanent access to archived content
+- Fast and efficient crawling
+- Intuitive browsing interface
