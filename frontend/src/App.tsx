@@ -11,12 +11,12 @@ function App() {
     <Router>
       <div className="min-h-screen bg-gray-50">
         <Header />
-        <main className="container mx-auto px-4 py-8">
+        <main>
           <Routes>
             <Route path="/" element={<HomePage />} />
-            <Route path="/archives" element={<ArchiveListPage />} />
-            <Route path="/archives/:id" element={<ArchiveDetailPage />} />
-            <Route path="/archives/:id/view/*" element={<ArchivedContentPage />} />
+            <Route path="/archives" element={<div className="container mx-auto px-4 py-8"><ArchiveListPage /></div>} />
+            <Route path="/archives/:id" element={<div className="container mx-auto px-4 py-8"><ArchiveDetailPage /></div>} />
+            <Route path="/archives/:id/view/*" element={<div className="container mx-auto px-4 py-8"><ArchivedContentPage /></div>} />
           </Routes>
         </main>
       </div>
