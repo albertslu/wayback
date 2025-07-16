@@ -69,8 +69,8 @@ export const ArchiveListPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-2xl mx-auto py-20">
           <div className="flex justify-center items-center min-h-64">
             <div className="text-center">
               <div className="animate-spin h-10 w-10 border-3 border-indigo-600 border-t-transparent rounded-full mx-auto mb-4" />
@@ -84,8 +84,8 @@ export const ArchiveListPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-2xl mx-auto py-20">
           <div className="text-center py-12">
             <XCircle className="h-12 w-12 text-red-600 mx-auto mb-4" />
             <h2 className="text-xl font-bold text-gray-900 mb-3">Something went wrong</h2>
@@ -103,8 +103,8 @@ export const ArchiveListPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50">
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-2xl mx-auto py-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -152,7 +152,7 @@ export const ArchiveListPage: React.FC = () => {
 
         {/* Archives List */}
         {archives.length === 0 ? (
-          <div className="text-center py-12 bg-white/60 rounded-2xl border border-white/30">
+          <div className="text-center py-12 bg-white/60 rounded-2xl border border-white/30 mx-4">
             <Globe className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No archives yet</h3>
             <p className="text-gray-600 mb-6">Create your first archive to get started preserving websites</p>
@@ -170,7 +170,7 @@ export const ArchiveListPage: React.FC = () => {
               <Link
                 key={archive.id}
                 to={`/archives/${archive.id}`}
-                className="block bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/30 p-4 hover:shadow-xl transition-all duration-200 hover:-translate-y-1"
+                className="block bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/30 p-6 hover:shadow-xl transition-all duration-200 hover:-translate-y-1 mx-4"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex-1 min-w-0">

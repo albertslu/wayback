@@ -11,7 +11,7 @@ export const Header: React.FC = () => {
 
   return (
     <header className="bg-white/90 backdrop-blur-md shadow-sm border-b border-white/30 sticky top-0 z-50">
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-2xl mx-auto px-6 sm:px-8 lg:px-10">
         <div className="flex items-center justify-between h-14">
           <Link to="/" className="flex items-center space-x-2 group">
             <div className="relative">
