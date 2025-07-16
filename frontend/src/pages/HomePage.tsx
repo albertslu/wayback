@@ -55,7 +55,7 @@ export const HomePage: React.FC = () => {
             Preserve the web, one snapshot at a time
           </p>
           
-          <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg text-slate-600 max-w-lg mx-auto leading-relaxed">
             Capture complete websites with all their content, styles, and functionality. 
             Create permanent archives that survive link rot and website changes.
           </p>
@@ -120,62 +120,62 @@ export const HomePage: React.FC = () => {
 
         {/* Features Section */}
         <div className="space-y-6 mb-12">
-          <div className="bg-white/90 backdrop-blur-sm p-6 rounded-xl shadow-lg border border-blue-100 hover:shadow-xl transition-all duration-200">
-            <div className="flex items-center space-x-3 mb-4">
+          <div className="bg-white/90 backdrop-blur-sm p-6 rounded-xl shadow-lg border border-blue-100 hover:shadow-xl transition-all duration-200 text-center max-w-xs mx-auto">
+            <div className="flex flex-col items-center space-y-3 mb-4">
               <div className="bg-gradient-to-r from-blue-500 to-indigo-500 p-3 rounded-lg">
                 <Archive className="h-6 w-6 text-white" />
               </div>
               <h3 className="font-bold text-slate-900 text-lg">Complete Snapshots</h3>
             </div>
-            <p className="text-slate-600 leading-relaxed">
-              Capture entire websites including all pages, images, stylesheets, and scripts for a complete browsing experience.
+            <p className="text-slate-600 leading-relaxed text-sm">
+              Capture entire websites including all pages, images, and scripts.
             </p>
           </div>
 
-          <div className="bg-white/90 backdrop-blur-sm p-6 rounded-xl shadow-lg border border-purple-100 hover:shadow-xl transition-all duration-200">
-            <div className="flex items-center space-x-3 mb-4">
+          <div className="bg-white/90 backdrop-blur-sm p-6 rounded-xl shadow-lg border border-purple-100 hover:shadow-xl transition-all duration-200 text-center max-w-xs mx-auto">
+            <div className="flex flex-col items-center space-y-3 mb-4">
               <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-3 rounded-lg">
                 <Clock className="h-6 w-6 text-white" />
               </div>
               <h3 className="font-bold text-slate-900 text-lg">Version History</h3>
             </div>
-            <p className="text-slate-600 leading-relaxed">
-              Create multiple snapshots over time to track changes and preserve the evolution of websites.
+            <p className="text-slate-600 leading-relaxed text-sm">
+              Track changes over time and preserve website evolution.
             </p>
           </div>
 
-          <div className="bg-white/90 backdrop-blur-sm p-6 rounded-xl shadow-lg border border-emerald-100 hover:shadow-xl transition-all duration-200">
-            <div className="flex items-center space-x-3 mb-4">
+          <div className="bg-white/90 backdrop-blur-sm p-6 rounded-xl shadow-lg border border-emerald-100 hover:shadow-xl transition-all duration-200 text-center max-w-xs mx-auto">
+            <div className="flex flex-col items-center space-y-3 mb-4">
               <div className="bg-gradient-to-r from-emerald-500 to-teal-500 p-3 rounded-lg">
                 <Shield className="h-6 w-6 text-white" />
               </div>
               <h3 className="font-bold text-slate-900 text-lg">Permanent Access</h3>
             </div>
-            <p className="text-slate-600 leading-relaxed">
-              Access archived content forever, even when the original website becomes unavailable or changes.
+            <p className="text-slate-600 leading-relaxed text-sm">
+              Access archived content forever, even when originals disappear.
             </p>
           </div>
         </div>
 
         {/* Additional Features */}
         <div className="space-y-6 mb-12">
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-200">
-            <div className="flex items-center space-x-3 mb-3">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-200 text-center max-w-xs mx-auto">
+            <div className="flex flex-col items-center space-y-3 mb-3">
               <Zap className="h-6 w-6 text-blue-600" />
               <h3 className="font-bold text-slate-900 text-lg">Lightning Fast</h3>
             </div>
-            <p className="text-slate-700">
-              Advanced crawling technology ensures quick and efficient archiving of even the largest websites.
+            <p className="text-slate-700 text-sm">
+              Quick and efficient archiving of even the largest websites.
             </p>
           </div>
 
-          <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-xl border border-green-200">
-            <div className="flex items-center space-x-3 mb-3">
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-xl border border-green-200 text-center max-w-xs mx-auto">
+            <div className="flex flex-col items-center space-y-3 mb-3">
               <Search className="h-6 w-6 text-green-600" />
               <h3 className="font-bold text-slate-900 text-lg">Easy Discovery</h3>
             </div>
-            <p className="text-slate-700">
-              Browse and search through your archived content with powerful tools and intuitive navigation.
+            <p className="text-slate-700 text-sm">
+              Browse and search archived content with powerful tools.
             </p>
           </div>
         </div>
