@@ -34,6 +34,12 @@ dist/
 build/
 *.tsbuildinfo
 
+# Frontend specific
+frontend/dist/
+frontend/build/
+frontend/.vite/
+frontend/coverage/
+
 # IDE files
 .vscode/
 .idea/
