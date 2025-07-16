@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Globe, Plus, AlertCircle, Archive, Clock, Shield } from 'lucide-react';
+import { Globe, Plus, AlertCircle, Archive, Clock, Shield, Zap, Download, Search } from 'lucide-react';
 import { archiveApi } from '../services/api';
 
 export const HomePage: React.FC = () => {
@@ -34,43 +34,47 @@ export const HomePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50">
-      <div className="w-1/2 mx-auto px-6 py-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      <div className="max-w-2xl mx-auto px-6 py-12">
         {/* Hero Section */}
-        <div className="text-center mb-6">
-          <div className="flex justify-center mb-4">
+        <div className="text-center mb-12">
+          <div className="flex justify-center mb-6">
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-cyan-600 rounded-full blur-xl opacity-30 animate-pulse"></div>
-              <div className="relative bg-gradient-to-r from-indigo-600 to-cyan-600 p-3 rounded-full shadow-lg">
-                <Archive className="h-8 w-8 text-white" />
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full blur-xl opacity-20 animate-pulse"></div>
+              <div className="relative bg-gradient-to-r from-blue-600 to-indigo-600 p-4 rounded-full shadow-2xl">
+                <Archive className="h-12 w-12 text-white" />
               </div>
             </div>
           </div>
           
-          <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-indigo-900 via-purple-800 to-cyan-800 bg-clip-text text-transparent mb-3">
-            Wayback Archive Tool
+          <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-slate-900 via-blue-900 to-indigo-900 bg-clip-text text-transparent mb-6 leading-tight">
+            Wayback Archive
           </h1>
           
-          <p className="text-sm text-gray-600 mb-6">
-            Preserve websites for posterity. Create complete snapshots of websites, 
-            including all pages, images, and assets.
+          <p className="text-xl md:text-2xl text-slate-700 mb-4 font-medium">
+            Preserve the web, one snapshot at a time
+          </p>
+          
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
+            Capture complete websites with all their content, styles, and functionality. 
+            Create permanent archives that survive link rot and website changes.
           </p>
         </div>
 
         {/* Main Form Section */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-xl border border-white/30 p-5 mb-6">
-          <form onSubmit={handleSubmit} className="space-y-3">
-            <div className="text-center mb-3">
-              <h2 className="text-base font-semibold bg-gradient-to-r from-indigo-800 to-cyan-800 bg-clip-text text-transparent mb-1">
-                Start Archiving
+        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl border border-white/50 p-8 mb-12">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-bold text-slate-900 mb-2">
+                Start Archiving Today
               </h2>
-              <p className="text-gray-600 text-xs">
-                Enter any website URL to begin
+              <p className="text-slate-600 text-lg">
+                Enter any website URL to create a permanent snapshot
               </p>
             </div>
 
             <div>
-              <label htmlFor="url" className="block text-xs font-medium text-gray-700 mb-1">
+              <label htmlFor="url" className="block text-sm font-semibold text-slate-800 mb-3">
                 Website URL
               </label>
               <div className="relative">
@@ -80,33 +84,33 @@ export const HomePage: React.FC = () => {
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
                   placeholder="https://example.com"
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-white shadow-sm"
+                  className="w-full px-4 py-4 text-lg border-2 border-slate-300 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 bg-white shadow-sm placeholder-slate-400"
                   disabled={isLoading}
                 />
-                <Globe className="absolute right-2 top-2 h-4 w-4 text-gray-400" />
+                <Globe className="absolute right-4 top-4 h-6 w-6 text-slate-400" />
               </div>
             </div>
 
             {error && (
-              <div className="flex items-center space-x-2 text-red-600 bg-red-50 p-2 rounded-lg border border-red-200">
-                <AlertCircle className="h-3 w-3 flex-shrink-0" />
-                <span className="text-xs">{error}</span>
+              <div className="flex items-center space-x-3 text-red-700 bg-red-50 p-4 rounded-xl border-2 border-red-200">
+                <AlertCircle className="h-5 w-5 flex-shrink-0" />
+                <span className="text-sm font-medium">{error}</span>
               </div>
             )}
 
             <button
               type="submit"
               disabled={isLoading || !url.trim()}
-              className="w-full bg-gradient-to-r from-indigo-600 to-cyan-600 text-white py-2 px-4 rounded-lg font-medium hover:from-indigo-700 hover:to-cyan-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl text-sm"
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-indigo-700 focus:ring-4 focus:ring-blue-500/20 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center space-x-3 shadow-xl hover:shadow-2xl"
             >
               {isLoading ? (
                 <>
-                  <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                  <div className="animate-spin h-6 w-6 border-3 border-white border-t-transparent rounded-full" />
                   <span>Creating Archive...</span>
                 </>
               ) : (
                 <>
-                  <Plus className="h-4 w-4" />
+                  <Plus className="h-6 w-6" />
                   <span>Create Archive</span>
                 </>
               )}
@@ -115,57 +119,81 @@ export const HomePage: React.FC = () => {
         </div>
 
         {/* Features Section */}
-        <div className="space-y-3 mb-6">
-          <div className="bg-gradient-to-r from-indigo-50 to-cyan-50 p-3 rounded-lg border border-indigo-100">
-            <div className="flex items-center space-x-2 mb-1">
-              <div className="bg-gradient-to-r from-indigo-500 to-cyan-500 p-1 rounded">
-                <Archive className="h-3 w-3 text-white" />
+        <div className="space-y-6 mb-12">
+          <div className="bg-white/90 backdrop-blur-sm p-6 rounded-xl shadow-lg border border-blue-100 hover:shadow-xl transition-all duration-200">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="bg-gradient-to-r from-blue-500 to-indigo-500 p-3 rounded-lg">
+                <Archive className="h-6 w-6 text-white" />
               </div>
-              <h3 className="font-medium text-indigo-900 text-xs">Complete Snapshots</h3>
+              <h3 className="font-bold text-slate-900 text-lg">Complete Snapshots</h3>
             </div>
-            <p className="text-xs text-gray-600">
-              Captures entire websites including all pages, images, stylesheets, and scripts.
+            <p className="text-slate-600 leading-relaxed">
+              Capture entire websites including all pages, images, stylesheets, and scripts for a complete browsing experience.
             </p>
           </div>
 
-          <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-3 rounded-lg border border-purple-100">
-            <div className="flex items-center space-x-2 mb-1">
-              <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-1 rounded">
-                <Clock className="h-3 w-3 text-white" />
+          <div className="bg-white/90 backdrop-blur-sm p-6 rounded-xl shadow-lg border border-purple-100 hover:shadow-xl transition-all duration-200">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-3 rounded-lg">
+                <Clock className="h-6 w-6 text-white" />
               </div>
-              <h3 className="font-medium text-purple-900 text-xs">Version History</h3>
+              <h3 className="font-bold text-slate-900 text-lg">Version History</h3>
             </div>
-            <p className="text-xs text-gray-600">
-              Create multiple snapshots over time to track changes and preserve evolution.
+            <p className="text-slate-600 leading-relaxed">
+              Create multiple snapshots over time to track changes and preserve the evolution of websites.
             </p>
           </div>
 
-          <div className="bg-gradient-to-r from-emerald-50 to-teal-50 p-3 rounded-lg border border-emerald-100">
-            <div className="flex items-center space-x-2 mb-1">
-              <div className="bg-gradient-to-r from-emerald-500 to-teal-500 p-1 rounded">
-                <Shield className="h-3 w-3 text-white" />
+          <div className="bg-white/90 backdrop-blur-sm p-6 rounded-xl shadow-lg border border-emerald-100 hover:shadow-xl transition-all duration-200">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="bg-gradient-to-r from-emerald-500 to-teal-500 p-3 rounded-lg">
+                <Shield className="h-6 w-6 text-white" />
               </div>
-              <h3 className="font-medium text-emerald-900 text-xs">Permanent Access</h3>
+              <h3 className="font-bold text-slate-900 text-lg">Permanent Access</h3>
             </div>
-            <p className="text-xs text-gray-600">
-              Access archived content forever, even when the original website becomes unavailable.
+            <p className="text-slate-600 leading-relaxed">
+              Access archived content forever, even when the original website becomes unavailable or changes.
+            </p>
+          </div>
+        </div>
+
+        {/* Additional Features */}
+        <div className="space-y-6 mb-12">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-200">
+            <div className="flex items-center space-x-3 mb-3">
+              <Zap className="h-6 w-6 text-blue-600" />
+              <h3 className="font-bold text-slate-900 text-lg">Lightning Fast</h3>
+            </div>
+            <p className="text-slate-700">
+              Advanced crawling technology ensures quick and efficient archiving of even the largest websites.
+            </p>
+          </div>
+
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-xl border border-green-200">
+            <div className="flex items-center space-x-3 mb-3">
+              <Search className="h-6 w-6 text-green-600" />
+              <h3 className="font-bold text-slate-900 text-lg">Easy Discovery</h3>
+            </div>
+            <p className="text-slate-700">
+              Browse and search through your archived content with powerful tools and intuitive navigation.
             </p>
           </div>
         </div>
 
         {/* Call to Action */}
-        <div className="text-center bg-gradient-to-r from-indigo-600/10 to-cyan-600/10 rounded-lg p-4 border border-indigo-200/20">
-          <h3 className="text-sm font-bold bg-gradient-to-r from-indigo-800 to-cyan-800 bg-clip-text text-transparent mb-1">
+        <div className="text-center bg-gradient-to-r from-slate-900 to-blue-900 rounded-2xl p-8 shadow-2xl">
+          <h3 className="text-2xl font-bold text-white mb-3">
             Ready to Preserve Digital History?
           </h3>
-          <p className="text-gray-600 text-xs mb-3">
-            Join the mission to preserve the web for future generations
+          <p className="text-blue-100 text-lg mb-6 max-w-2xl mx-auto">
+            Join thousands of users who trust Wayback Archive to preserve important web content for future generations.
           </p>
           <button
             onClick={() => document.getElementById('url')?.focus()}
-            className="bg-gradient-to-r from-indigo-600 to-cyan-600 text-white px-4 py-1 rounded font-medium hover:from-indigo-700 hover:to-cyan-700 transition-all duration-200 shadow-lg text-xs"
+            className="bg-white text-slate-900 px-8 py-3 rounded-xl font-semibold text-lg hover:bg-blue-50 transition-all duration-200 shadow-lg hover:shadow-xl inline-flex items-center space-x-2"
           >
-            Get Started Now
+            <Download className="h-5 w-5" />
+            <span>Start Archiving Now</span>
           </button>
         </div>
       </div>
