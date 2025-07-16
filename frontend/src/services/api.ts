@@ -1,6 +1,26 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+// In production, this will use the environment variable
+// In development, it will use localhost
+// For Vercel preview deployments without a backend, it can use a fallback
+const getApiBaseUrl = () => {
+  // Environment variable from Vercel or .env file
+  const envUrl = import.meta.env.VITE_API_URL;
+  
+  if (envUrl) return envUrl;
+  
+  // Local development fallback
+  if (import.meta.env.DEV) {
+    return 'http://localhost:3001/api';
+  }
+  
+  // Production fallback (if no env var is set)
+  return '/api'; // This will make relative requests to the same origin
+};
+
+const API_BASE_URL = getApiBaseUrl();
+
+console.log('API Base URL:', API_BASE_URL);
 
 const api = axios.create({
   baseURL: API_BASE_URL,
