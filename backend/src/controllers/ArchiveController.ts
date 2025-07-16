@@ -131,6 +131,13 @@ export class ArchiveController {
         ico: 'image/x-icon'
       };
 
+      // Set headers to allow iframe embedding
+      res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+      res.setHeader('Content-Security-Policy', "frame-ancestors 'self' http://localhost:5173 http://localhost:3000");
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
       if (ext && contentTypes[ext]) {
         res.setHeader('Content-Type', contentTypes[ext]);
       }

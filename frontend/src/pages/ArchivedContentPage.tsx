@@ -58,6 +58,12 @@ export const ArchivedContentPage: React.FC = () => {
             src={contentUrl}
             className="w-full h-[calc(100vh-200px)] border-0"
             title="Archived Content"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+            onError={(e) => {
+              console.error('Iframe failed to load:', e);
+              // Fallback: redirect to new tab
+              window.open(contentUrl, '_blank');
+            }}
           />
         </div>
       </div>
