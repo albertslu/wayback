@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Clock, Globe, FileText, Image, CheckCircle, XCircle, Loader, Plus } from 'lucide-react';
+import { Clock, Globe, CheckCircle, XCircle, Loader, Plus } from 'lucide-react';
 import { archiveApi, type Archive } from '../services/api';
 
 export const ArchiveListPage: React.FC = () => {
