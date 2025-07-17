@@ -5,9 +5,9 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.js",
+    "start": "chmod +x scripts/start.sh && ./scripts/start.sh",
     "dev": "nodemon --exec ts-node src/index.ts",
-    "postinstall": "npm run build && npx prisma generate && npx prisma db push",
+    "postinstall": "npm run build && npx prisma generate",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
