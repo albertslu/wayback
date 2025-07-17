@@ -7,6 +7,9 @@ const archiveController = new ArchiveController();
 // GET /api/archives - List all archives
 router.get('/', archiveController.listArchives);
 
+// GET /api/archives/grouped - Get archives grouped by domain
+router.get('/grouped', archiveController.getArchivesByDomain);
+
 // POST /api/archives - Create new archive
 router.post('/', archiveController.createArchive);
 

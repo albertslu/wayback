@@ -64,6 +64,14 @@ export interface CreateArchiveRequest {
   url: string;
 }
 
+export interface DomainGroup {
+  domain: string;
+  rootUrl: string;
+  totalVersions: number;
+  latestArchive: Archive;
+  versions: Archive[];
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   data: T;
@@ -73,6 +81,12 @@ export const archiveApi = {
   // Get all archives
   getArchives: async (): Promise<Archive[]> => {
     const response = await api.get<ApiResponse<Archive[]>>('/archives');
+    return response.data.data;
+  },
+
+  // Get archives grouped by domain
+  getArchivesByDomain: async (): Promise<DomainGroup[]> => {
+    const response = await api.get<ApiResponse<DomainGroup[]>>('/archives/grouped');
     return response.data.data;
   },
 

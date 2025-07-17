@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Clock, Globe, CheckCircle, XCircle, Loader, Plus } from 'lucide-react';
-import { archiveApi, type Archive } from '../services/api';
+import { Clock, Globe, CheckCircle, XCircle, Loader, Plus, ChevronDown, ChevronRight, Calendar } from 'lucide-react';
+import { archiveApi, type Archive, type DomainGroup } from '../services/api';
 
 export const ArchiveListPage: React.FC = () => {
-  const [archives, setArchives] = useState<Archive[]>([]);
+  const [domainGroups, setDomainGroups] = useState<DomainGroup[]>([]);
+  const [expandedDomains, setExpandedDomains] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -15,14 +16,26 @@ export const ArchiveListPage: React.FC = () => {
   const loadArchives = async () => {
     try {
       setIsLoading(true);
-      const data = await archiveApi.getArchives();
-      setArchives(data);
+      const data = await archiveApi.getArchivesByDomain();
+      setDomainGroups(data);
     } catch (err) {
       setError('Failed to load archives');
     } finally {
       setIsLoading(false);
     }
   };
+
+  const toggleDomainExpansion = (domain: string) => {
+    const newExpanded = new Set(expandedDomains);
+    if (newExpanded.has(domain)) {
+      newExpanded.delete(domain);
+    } else {
+      newExpanded.add(domain);
+    }
+    setExpandedDomains(newExpanded);
+  };
+
+  const totalArchives = domainGroups.reduce((sum, group) => sum + group.totalVersions, 0);
 
   const getStatusIcon = (status: Archive['status']) => {
     switch (status) {
@@ -112,7 +125,7 @@ export const ArchiveListPage: React.FC = () => {
               Your Archives
             </h1>
             <p className="text-gray-600">
-              {archives.length} {archives.length === 1 ? 'archive' : 'archives'} preserved
+              {totalArchives} {totalArchives === 1 ? 'archive' : 'archives'} preserved across {domainGroups.length} {domainGroups.length === 1 ? 'domain' : 'domains'}
             </p>
           </div>
           <Link
@@ -128,14 +141,14 @@ export const ArchiveListPage: React.FC = () => {
         <div className="grid grid-cols-3 gap-4 mb-8">
           <div className="bg-gradient-to-r from-indigo-50 to-cyan-50 p-4 rounded-2xl border border-indigo-100">
             <div className="text-center">
-              <div className="text-2xl font-bold text-indigo-600">{archives.length}</div>
-              <div className="text-xs text-gray-600">Total Archives</div>
+              <div className="text-2xl font-bold text-indigo-600">{domainGroups.length}</div>
+              <div className="text-xs text-gray-600">Domains</div>
             </div>
           </div>
           <div className="bg-gradient-to-r from-emerald-50 to-teal-50 p-4 rounded-2xl border border-emerald-100">
             <div className="text-center">
               <div className="text-2xl font-bold text-emerald-600">
-                {archives.filter(a => a.status === 'COMPLETED').length}
+                {domainGroups.reduce((sum, group) => sum + group.versions.filter((a: Archive) => a.status === 'COMPLETED').length, 0)}
               </div>
               <div className="text-xs text-gray-600">Completed</div>
             </div>
@@ -143,15 +156,15 @@ export const ArchiveListPage: React.FC = () => {
           <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-2xl border border-purple-100">
             <div className="text-center">
               <div className="text-2xl font-bold text-purple-600">
-                {archives.filter(a => a.status === 'IN_PROGRESS').length}
+                {domainGroups.reduce((sum, group) => sum + group.versions.filter((a: Archive) => a.status === 'IN_PROGRESS').length, 0)}
               </div>
               <div className="text-xs text-gray-600">In Progress</div>
             </div>
           </div>
         </div>
 
-        {/* Archives List */}
-        {archives.length === 0 ? (
+        {/* Domain Groups List */}
+        {domainGroups.length === 0 ? (
           <div className="text-center py-12 bg-white/60 rounded-2xl border border-white/30 mx-4">
             <Globe className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No archives yet</h3>
@@ -166,29 +179,77 @@ export const ArchiveListPage: React.FC = () => {
           </div>
         ) : (
           <div className="space-y-4">
-            {archives.map((archive) => (
-              <Link
-                key={archive.id}
-                to={`/archives/${archive.id}`}
-                className="block bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/30 p-6 hover:shadow-xl transition-all duration-200 hover:-translate-y-1 mx-4"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <Globe className="h-5 w-5 text-gray-400 flex-shrink-0" />
-                      <h3 className="font-medium text-gray-900 truncate">{archive.domain}</h3>
+            {domainGroups.map((domainGroup) => (
+              <div key={domainGroup.domain} className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/30 mx-4 overflow-hidden">
+                {/* Domain Header */}
+                <div 
+                  className="p-6 cursor-pointer hover:bg-gray-50 transition-colors"
+                  onClick={() => toggleDomainExpansion(domainGroup.domain)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center space-x-3 mb-2">
+                        <Globe className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                        <h3 className="font-medium text-gray-900 truncate">{domainGroup.domain}</h3>
+                        <span className="bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full text-xs font-medium">
+                          {domainGroup.totalVersions} version{domainGroup.totalVersions !== 1 ? 's' : ''}
+                        </span>
+                      </div>
+                      <p className="text-sm text-indigo-600 truncate mb-2">{domainGroup.rootUrl}</p>
+                      <p className="text-xs text-gray-500">Latest: {formatDate(domainGroup.latestArchive.createdAt)}</p>
                     </div>
-                    <p className="text-sm text-indigo-600 truncate mb-2">{archive.rootUrl}</p>
-                    <p className="text-xs text-gray-500">{formatDate(archive.createdAt)}</p>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <span className={`inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(archive.status)}`}>
-                      {getStatusIcon(archive.status)}
-                      <span>{getStatusText(archive.status)}</span>
-                    </span>
+                    <div className="flex items-center space-x-3">
+                      <span className={`inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(domainGroup.latestArchive.status)}`}>
+                        {getStatusIcon(domainGroup.latestArchive.status)}
+                        <span>{getStatusText(domainGroup.latestArchive.status)}</span>
+                      </span>
+                      {expandedDomains.has(domainGroup.domain) ? (
+                        <ChevronDown className="h-5 w-5 text-gray-400" />
+                      ) : (
+                        <ChevronRight className="h-5 w-5 text-gray-400" />
+                      )}
+                    </div>
                   </div>
                 </div>
-              </Link>
+
+                {/* Version History */}
+                {expandedDomains.has(domainGroup.domain) && (
+                  <div className="border-t border-gray-200 bg-gray-50/50">
+                    <div className="p-4">
+                      <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center space-x-2">
+                        <Calendar className="h-4 w-4" />
+                        <span>Version History</span>
+                      </h4>
+                      <div className="space-y-2">
+                        {domainGroup.versions.map((archive) => (
+                          <Link
+                            key={archive.id}
+                            to={`/archives/${archive.id}`}
+                            className="block p-3 bg-white rounded-lg hover:bg-indigo-50 transition-colors border border-gray-200"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center space-x-2 mb-1">
+                                  <span className="text-sm font-medium text-gray-900">
+                                    {formatDate(archive.createdAt)}
+                                  </span>
+                                  <span className={`inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(archive.status)}`}>
+                                    {getStatusIcon(archive.status)}
+                                    <span>{getStatusText(archive.status)}</span>
+                                  </span>
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  {archive.totalPages} pages, {archive.totalAssets} assets
+                                </div>
+                              </div>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         )}

@@ -30,6 +30,49 @@ export class ArchiveController {
     }
   };
 
+  getArchivesByDomain = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const archives = await prisma.archive.findMany({
+        orderBy: { createdAt: 'desc' },
+        include: {
+          _count: {
+            select: { pages: true }
+          }
+        }
+      });
+
+      // Group archives by domain
+      const groupedArchives = archives.reduce((acc, archive) => {
+        if (!acc[archive.domain]) {
+          acc[archive.domain] = {
+            domain: archive.domain,
+            rootUrl: archive.rootUrl,
+            totalVersions: 0,
+            latestArchive: archive,
+            versions: []
+          };
+        }
+        
+        acc[archive.domain].totalVersions++;
+        acc[archive.domain].versions.push(archive);
+        
+        // Keep the most recent archive as the latest
+        if (new Date(archive.createdAt) > new Date(acc[archive.domain].latestArchive.createdAt)) {
+          acc[archive.domain].latestArchive = archive;
+        }
+        
+        return acc;
+      }, {} as Record<string, any>);
+
+      res.json({
+        success: true,
+        data: Object.values(groupedArchives)
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   createArchive = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { url } = req.body;

@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Globe, FileText, Image, Clock, ExternalLink } from 'lucide-react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft, Globe, FileText, Image, Clock, ExternalLink, Plus, RefreshCw } from 'lucide-react';
 import { archiveApi, type Archive, type Page } from '../services/api';
 
 export const ArchiveDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [archive, setArchive] = useState<Archive | null>(null);
   const [pages, setPages] = useState<Page[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCreatingNewArchive, setIsCreatingNewArchive] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -34,6 +36,20 @@ export const ArchiveDetailPage: React.FC = () => {
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString();
+  };
+
+  const handleReArchive = async () => {
+    if (!archive) return;
+
+    setIsCreatingNewArchive(true);
+    try {
+      const newArchive = await archiveApi.createArchive({ url: archive.rootUrl });
+      navigate(`/archives/${newArchive.id}`);
+    } catch (err) {
+      setError('Failed to create new archive. Please try again.');
+    } finally {
+      setIsCreatingNewArchive(false);
+    }
   };
 
   if (isLoading) {
@@ -85,14 +101,33 @@ export const ArchiveDetailPage: React.FC = () => {
                 </a>
               </p>
             </div>
-            {archive.status === 'COMPLETED' && (
-              <Link
-                to={`/archives/${archive.id}/view/index.html`}
-                className="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors"
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={handleReArchive}
+                disabled={isCreatingNewArchive}
+                className="flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                View Archive
-              </Link>
-            )}
+                {isCreatingNewArchive ? (
+                  <>
+                    <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                    <span>Creating...</span>
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="h-4 w-4" />
+                    <span>Re-Archive</span>
+                  </>
+                )}
+              </button>
+              {archive.status === 'COMPLETED' && (
+                <Link
+                  to={`/archives/${archive.id}/view/index.html`}
+                  className="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors"
+                >
+                  View Archive
+                </Link>
+              )}
+            </div>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
