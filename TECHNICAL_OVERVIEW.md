@@ -291,15 +291,371 @@ model SharedAsset {
 ```
 
 #### 3. **User Experience Improvements**
-- **Real-time Progress**: WebSocket connections for live crawling updates
-- **Preview Generation**: Thumbnail screenshots of archived pages
-- **Advanced Search**: Full-text search across archived content
-- **Comparison Views**: Side-by-side comparison of different archive versions
 
-#### 4. **Content Fidelity**
-- **Dynamic Content Capture**: Better handling of SPAs and JavaScript-heavy sites
-- **Media Support**: Video and audio content preservation
-- **Interactive Elements**: Form state and dynamic functionality preservation
+**Real-time Progress with WebSockets:**
+```typescript
+// WebSocket implementation for live updates
+import { Server as SocketIOServer } from 'socket.io';
+
+class ArchiveProgressService {
+  private io: SocketIOServer;
+
+  constructor(server: any) {
+    this.io = new SocketIOServer(server, {
+      cors: { origin: process.env.FRONTEND_URL }
+    });
+  }
+
+  emitCrawlProgress(archiveId: string, progress: {
+    currentUrl: string;
+    pagesCompleted: number;
+    totalPages: number;
+    assetsDownloaded: number;
+    errors: string[];
+    estimatedTimeRemaining: number;
+  }): void {
+    this.io.to(`archive-${archiveId}`).emit('crawl-progress', progress);
+  }
+
+  subscribeToArchive(socket: any, archiveId: string): void {
+    socket.join(`archive-${archiveId}`);
+  }
+}
+```
+
+**AI-Powered Preview Generation:**
+```typescript
+import sharp from 'sharp';
+import { OpenAI } from 'openai';
+
+class IntelligentPreviewService {
+  private openai: OpenAI;
+
+  async generateSmartThumbnail(htmlContent: string, url: string): Promise<Buffer> {
+    // Take screenshot with Puppeteer
+    const screenshot = await this.takeScreenshot(url);
+    
+    // Use AI to identify the most important content areas
+    const importantRegions = await this.identifyKeyContent(htmlContent);
+    
+    // Crop and enhance the thumbnail focusing on key content
+    return await sharp(screenshot)
+      .extract({
+        left: importantRegions.x,
+        top: importantRegions.y,
+        width: importantRegions.width,
+        height: importantRegions.height
+      })
+      .resize(400, 300, { fit: 'cover' })
+      .jpeg({ quality: 85 })
+      .toBuffer();
+  }
+
+  async generateContentSummary(htmlContent: string): Promise<string> {
+    const textContent = this.extractTextContent(htmlContent);
+    
+    const response = await this.openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          role: "system",
+          content: "Summarize this webpage content in 2-3 sentences, focusing on the main purpose and key information."
+        },
+        { role: "user", content: textContent.substring(0, 4000) }
+      ],
+      max_tokens: 150
+    });
+
+    return response.choices[0].message.content || "No summary available";
+  }
+}
+```
+
+**Advanced Full-Text Search with Elasticsearch:**
+```typescript
+import { Client } from '@elastic/elasticsearch';
+
+class AdvancedSearchService {
+  private client: Client;
+
+  constructor() {
+    this.client = new Client({ node: process.env.ELASTICSEARCH_URL });
+  }
+
+  async indexArchiveContent(archive: Archive, pages: Page[]): Promise<void> {
+    const body = pages.flatMap(page => [
+      { index: { _index: 'archived-pages', _id: page.id } },
+      {
+        archiveId: archive.id,
+        domain: archive.domain,
+        url: page.url,
+        title: page.title,
+        content: this.extractTextContent(page.htmlContent),
+        timestamp: archive.timestamp,
+        tags: this.extractTags(page.htmlContent),
+        metadata: {
+          linksCount: page.linksCount,
+          hasImages: page.assets.some(a => a.type === 'IMAGE'),
+          hasVideos: page.assets.some(a => a.type === 'VIDEO')
+        }
+      }
+    ]);
+
+    await this.client.bulk({ body });
+  }
+
+  async searchAcrossArchives(query: string, filters?: {
+    domain?: string;
+    dateRange?: { from: Date; to: Date };
+    contentType?: string;
+  }): Promise<SearchResult[]> {
+    const searchQuery = {
+      index: 'archived-pages',
+      body: {
+        query: {
+          bool: {
+            must: [
+              {
+                multi_match: {
+                  query,
+                  fields: ['title^3', 'content', 'url^2'],
+                  type: 'best_fields'
+                }
+              }
+            ],
+            filter: this.buildFilters(filters)
+          }
+        },
+        highlight: {
+          fields: {
+            content: { fragment_size: 150, number_of_fragments: 3 },
+            title: {}
+          }
+        },
+        size: 50
+      }
+    };
+
+    return await this.client.search(searchQuery);
+  }
+}
+```
+
+**Visual Diff for Archive Comparisons:**
+```typescript
+import { diffWords, diffLines } from 'diff';
+import pixelmatch from 'pixelmatch';
+
+class ArchiveComparisonService {
+  async compareArchiveVersions(oldArchiveId: string, newArchiveId: string, url: string): Promise<{
+    textDiff: any;
+    visualDiff: Buffer;
+    structuralChanges: any;
+  }> {
+    const [oldPage, newPage] = await Promise.all([
+      this.getPageContent(oldArchiveId, url),
+      this.getPageContent(newArchiveId, url)
+    ]);
+
+    // Text content comparison
+    const textDiff = diffLines(
+      this.extractTextContent(oldPage.content),
+      this.extractTextContent(newPage.content)
+    );
+
+    // Visual comparison
+    const [oldScreenshot, newScreenshot] = await Promise.all([
+      this.getScreenshot(oldArchiveId, url),
+      this.getScreenshot(newArchiveId, url)
+    ]);
+
+    const visualDiff = await this.generateVisualDiff(oldScreenshot, newScreenshot);
+
+    // Structural changes (DOM differences)
+    const structuralChanges = await this.compareHtmlStructure(
+      oldPage.content,
+      newPage.content
+    );
+
+    return { textDiff, visualDiff, structuralChanges };
+  }
+
+  async generateVisualDiff(img1: Buffer, img2: Buffer): Promise<Buffer> {
+    const { PNG } = require('pngjs');
+    
+    const png1 = PNG.sync.read(img1);
+    const png2 = PNG.sync.read(img2);
+    const diff = new PNG({ width: png1.width, height: png1.height });
+
+    const numDiffPixels = pixelmatch(
+      png1.data, png2.data, diff.data,
+      png1.width, png1.height,
+      { threshold: 0.1 }
+    );
+
+    return PNG.sync.write(diff);
+  }
+}
+```
+
+#### 4. **Advanced Content Fidelity**
+
+**SPA and JavaScript-Heavy Site Handling:**
+```typescript
+class AdvancedCrawler {
+  async crawlSPA(url: string): Promise<PageData> {
+    const page = await this.browser.newPage();
+    
+    // Enable JavaScript execution
+    await page.setJavaScriptEnabled(true);
+    
+    // Wait for network to be idle and content to load
+    await page.goto(url, { 
+      waitUntil: ['networkidle0', 'domcontentloaded'],
+      timeout: 30000 
+    });
+
+    // Wait for common SPA frameworks to finish rendering
+    await page.waitForFunction(() => {
+      return window.document.readyState === 'complete' &&
+             // React
+             (!window.React || window.React.version) &&
+             // Vue
+             (!window.Vue || document.querySelector('[data-v-]')) &&
+             // Angular
+             (!window.ng || window.getAllAngularRootElements().length > 0);
+    }, { timeout: 10000 });
+
+    // Scroll to trigger lazy loading
+    await this.autoScroll(page);
+    
+    // Capture state after interactions
+    const content = await page.content();
+    
+    // Save JavaScript state and localStorage
+    const browserState = await page.evaluate(() => ({
+      localStorage: { ...localStorage },
+      sessionStorage: { ...sessionStorage },
+      cookies: document.cookie
+    }));
+
+    return {
+      content,
+      browserState,
+      // ... other data
+    };
+  }
+
+  async autoScroll(page: any): Promise<void> {
+    await page.evaluate(async () => {
+      await new Promise(resolve => {
+        let totalHeight = 0;
+        const distance = 100;
+        const timer = setInterval(() => {
+          window.scrollBy(0, distance);
+          totalHeight += distance;
+          
+          if (totalHeight >= document.body.scrollHeight) {
+            clearInterval(timer);
+            resolve(null);
+          }
+        }, 100);
+      });
+    });
+  }
+}
+```
+
+**Media Content Preservation:**
+```typescript
+class MediaArchiver {
+  async archiveVideo(videoUrl: string, archivePath: string): Promise<AssetData> {
+    // Use youtube-dl or similar for video downloads
+    const ytdl = require('youtube-dl-exec');
+    
+    const info = await ytdl(videoUrl, {
+      dumpSingleJson: true,
+      noWarnings: true,
+      noCallHome: true
+    });
+
+    // Download best quality video + audio
+    const outputPath = path.join(archivePath, 'media', `${info.id}.mp4`);
+    
+    await ytdl(videoUrl, {
+      format: 'best[height<=720]', // Limit quality for storage
+      output: outputPath
+    });
+
+    // Generate thumbnail
+    const thumbnailPath = await this.generateVideoThumbnail(outputPath);
+    
+    return {
+      type: 'VIDEO',
+      originalUrl: videoUrl,
+      localPath: outputPath,
+      thumbnailPath,
+      metadata: {
+        duration: info.duration,
+        title: info.title,
+        description: info.description,
+        uploadDate: info.upload_date
+      }
+    };
+  }
+
+  async archiveAudio(audioUrl: string): Promise<AssetData> {
+    // Similar implementation for audio files
+    // Support for podcasts, music, etc.
+  }
+}
+```
+
+**Interactive Elements Preservation:**
+```typescript
+class InteractivityPreserver {
+  async preserveFormState(page: any): Promise<any> {
+    return await page.evaluate(() => {
+      const forms = Array.from(document.forms);
+      return forms.map(form => ({
+        action: form.action,
+        method: form.method,
+        fields: Array.from(form.elements).map(element => ({
+          name: element.name,
+          type: element.type,
+          value: element.value,
+          options: element.options ? Array.from(element.options).map(opt => ({
+            text: opt.text,
+            value: opt.value,
+            selected: opt.selected
+          })) : null
+        }))
+      }));
+    });
+  }
+
+  async captureInteractiveState(page: any): Promise<any> {
+    return await page.evaluate(() => {
+      // Capture expanded/collapsed states
+      const collapsibleElements = document.querySelectorAll('[aria-expanded]');
+      
+      // Capture tab states
+      const tabElements = document.querySelectorAll('[role="tab"]');
+      
+      // Capture modal states
+      const modalElements = document.querySelectorAll('[role="dialog"]');
+      
+      return {
+        collapsibleStates: Array.from(collapsibleElements).map(el => ({
+          selector: this.generateSelector(el),
+          expanded: el.getAttribute('aria-expanded') === 'true'
+        })),
+        activeTab: document.querySelector('[role="tab"][aria-selected="true"]')?.textContent,
+        openModals: Array.from(modalElements).map(el => el.id || this.generateSelector(el))
+      };
+    });
+  }
+}
 
 ### How to Scale for Production Use
 
