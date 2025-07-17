@@ -48,18 +48,20 @@ model Page {
 }
 
 model Asset {
-  id          String   @id @default(cuid())
-  pageId      String
-  type        AssetType
-  originalUrl String
-  localPath   String   // Path relative to archive directory
-  size        Int?     // File size in bytes
-  mimeType    String?
-  status      AssetStatus @default(PENDING)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String   @id @default(cuid())
+  pageId        String
+  type          AssetType
+  originalUrl   String
+  localPath     String   // Path relative to archive directory
+  size          Int?     // File size in bytes
+  compressedSize Int?    // Compressed file size in bytes
+  isCompressed  Boolean  @default(false)
+  mimeType      String?
+  status        AssetStatus @default(PENDING)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
   
-  page        Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  page          Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
   
   @@map("assets")
 }

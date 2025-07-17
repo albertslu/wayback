@@ -23,6 +23,8 @@ interface AssetData {
   originalUrl: string;
   localPath: string;
   size: number;
+  compressedSize?: number;
+  isCompressed?: boolean;
   mimeType: string;
 }
 
@@ -221,10 +223,17 @@ export class WebCrawler {
 
         await this.fileManager.writeFile(fullPath, response.data);
 
+        // Check if file was compressed
+        const compressedPath = fullPath + '.gz';
+        const isCompressed = await this.fileManager.fileExists(compressedPath);
+        const compressedSize = isCompressed ? await this.fileManager.getFileSize(compressedPath) : undefined;
+
         downloadedAssets.push({
           ...asset,
           localPath,
           size: response.data.length,
+          compressedSize,
+          isCompressed,
           mimeType: response.headers['content-type'] || asset.mimeType
         });
       } catch (error) {

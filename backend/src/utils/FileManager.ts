@@ -1,5 +1,6 @@
 import fs from 'fs-extra';
 import path from 'path';
+import zlib from 'zlib';
 
 export class FileManager {
   private baseArchivePath: string;
@@ -22,11 +23,50 @@ export class FileManager {
 
   async writeFile(filePath: string, content: string | Buffer): Promise<void> {
     await fs.ensureDir(path.dirname(filePath));
-    await fs.writeFile(filePath, content);
+    
+    // Compress text files (HTML, CSS, JS) but not images
+    if (this.shouldCompress(filePath)) {
+      const compressed = await this.compressContent(content);
+      await fs.writeFile(filePath + '.gz', compressed);
+    } else {
+      await fs.writeFile(filePath, content);
+    }
   }
 
   async readFile(filePath: string): Promise<Buffer> {
+    // Try compressed version first
+    const compressedPath = filePath + '.gz';
+    if (await this.fileExists(compressedPath)) {
+      const compressed = await fs.readFile(compressedPath);
+      return await this.decompressContent(compressed);
+    }
+    
+    // Fallback to uncompressed
     return await fs.readFile(filePath);
+  }
+
+  private shouldCompress(filePath: string): boolean {
+    const ext = path.extname(filePath).toLowerCase();
+    // Compress text files, not images or already compressed files
+    return ['.html', '.css', '.js', '.json', '.xml', '.svg', '.txt'].includes(ext);
+  }
+
+  private async compressContent(content: string | Buffer): Promise<Buffer> {
+    return new Promise((resolve, reject) => {
+      zlib.gzip(content, (err, result) => {
+        if (err) reject(err);
+        else resolve(result);
+      });
+    });
+  }
+
+  private async decompressContent(compressed: Buffer): Promise<Buffer> {
+    return new Promise((resolve, reject) => {
+      zlib.gunzip(compressed, (err, result) => {
+        if (err) reject(err);
+        else resolve(result);
+      });
+    });
   }
 
   async fileExists(filePath: string): Promise<boolean> {

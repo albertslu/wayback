@@ -104,6 +104,8 @@ export class ArchiveService {
             originalUrl: assetData.originalUrl,
             localPath: assetData.localPath,
             size: assetData.size,
+            compressedSize: assetData.compressedSize,
+            isCompressed: assetData.isCompressed || false,
             mimeType: assetData.mimeType,
             status: 'DOWNLOADED'
           }
