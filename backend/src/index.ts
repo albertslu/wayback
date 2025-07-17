@@ -28,8 +28,18 @@ app.use(helmet({
   contentSecurityPolicy: false, // Disable CSP for archived content
   crossOriginEmbedderPolicy: false
 }));
+const allowedOrigins = [
+  'http://localhost:5173', 
+  'http://localhost:3000',
+  /^https:\/\/.*\.vercel\.app$/,  // Allow all Vercel domains
+];
+
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
+}
+
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:3000'],
+  origin: allowedOrigins,
   credentials: true
 }));
 app.use(morgan('combined'));
@@ -41,8 +51,23 @@ app.use('/api/archives', archiveRoutes);
 app.use('/api/scheduler', createSchedulerRoutes(schedulerController));
 
 // Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+app.get('/health', async (req, res) => {
+  try {
+    // Test database connection
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({ 
+      status: 'OK', 
+      timestamp: new Date().toISOString(),
+      database: 'connected',
+      scheduler: schedulerService.getActiveJobsCount() + ' jobs active'
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      status: 'ERROR', 
+      timestamp: new Date().toISOString(),
+      error: 'Database connection failed'
+    });
+  }
 });
 
 // Error handling middleware
