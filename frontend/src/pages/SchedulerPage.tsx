@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, CalendarOff, Globe, Clock, Play, Pause, Trash2, Plus, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+import { Calendar, Globe, Clock, Play, Pause, Trash2, Plus, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 import { schedulerApi, type ScheduledArchive, type SchedulerStatus } from '../services/api';
 
 export const SchedulerPage: React.FC = () => {

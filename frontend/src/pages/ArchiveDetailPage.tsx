@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Globe, FileText, Image, Clock, ExternalLink, Plus, RefreshCw, Calendar, CalendarOff } from 'lucide-react';
+import { ArrowLeft, Globe, FileText, Image, Clock, ExternalLink, RefreshCw, Calendar, CalendarOff } from 'lucide-react';
 import { archiveApi, schedulerApi, type Archive, type Page, type ScheduledArchive } from '../services/api';
 
 export const ArchiveDetailPage: React.FC = () => {
