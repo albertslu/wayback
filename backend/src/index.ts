@@ -32,7 +32,8 @@ const allowedOrigins = [
   'http://localhost:5173', 
   'http://localhost:3000',
   /^https:\/\/.*\.vercel\.app$/,  // Allow all Vercel domains
-  'https://wayback-pio1imjmr-albert-lus-projects-aad2419e.vercel.app', // Your specific Vercel URL
+  'https://wayback-pio1imjmr-albert-lus-projects-aad2419e.vercel.app', // Your old Vercel URL
+  'https://wayback-eight.vercel.app', // Your new Vercel URL
 ];
 
 if (process.env.FRONTEND_URL) {
