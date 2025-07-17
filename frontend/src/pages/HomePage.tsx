@@ -47,7 +47,7 @@ export const HomePage: React.FC = () => {
             </div>
           </div>
           
-          <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-slate-900 via-blue-900 to-indigo-900 bg-clip-text text-transparent mb-6 leading-tight">
+          <h1 className="text-4xl md:text-6xl font-bold text-slate-900 mb-6 leading-tight">
             Wayback Archive
           </h1>
           
