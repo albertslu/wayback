@@ -5,6 +5,9 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
 import archiveRoutes from './routes/archive';
+import { createSchedulerRoutes } from './routes/scheduler';
+import { SchedulerService } from './services/SchedulerService';
+import { SchedulerController } from './controllers/SchedulerController';
 import { errorHandler } from './middleware/errorHandler';
 
 // Load environment variables
@@ -15,6 +18,10 @@ const port = process.env.PORT || 3001;
 
 // Initialize Prisma client
 export const prisma = new PrismaClient();
+
+// Initialize Scheduler Service
+const schedulerService = new SchedulerService();
+const schedulerController = new SchedulerController(schedulerService);
 
 // Middleware
 app.use(helmet({
@@ -31,6 +38,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api/archives', archiveRoutes);
+app.use('/api/scheduler', createSchedulerRoutes(schedulerController));
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -47,9 +55,13 @@ async function startServer() {
     await prisma.$connect();
     console.log('✅ Database connected successfully');
     
+    // Initialize scheduler
+    await schedulerService.initializeScheduler();
+    
     app.listen(port, () => {
       console.log(`🚀 Server running on port ${port}`);
       console.log(`📊 Health check: http://localhost:${port}/health`);
+      console.log(`⏰ Scheduler active with ${schedulerService.getActiveJobsCount()} jobs`);
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error);
@@ -60,6 +72,7 @@ async function startServer() {
 // Graceful shutdown
 process.on('SIGINT', async () => {
   console.log('\n🔄 Shutting down gracefully...');
+  schedulerService.shutdown();
   await prisma.$disconnect();
   process.exit(0);
 });

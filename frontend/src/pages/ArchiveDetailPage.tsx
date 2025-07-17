@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Globe, FileText, Image, Clock, ExternalLink, Plus, RefreshCw } from 'lucide-react';
-import { archiveApi, type Archive, type Page } from '../services/api';
+import { ArrowLeft, Globe, FileText, Image, Clock, ExternalLink, Plus, RefreshCw, Calendar, CalendarOff } from 'lucide-react';
+import { archiveApi, schedulerApi, type Archive, type Page, type ScheduledArchive } from '../services/api';
 
 export const ArchiveDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [archive, setArchive] = useState<Archive | null>(null);
   const [pages, setPages] = useState<Page[]>([]);
+  const [scheduledArchive, setScheduledArchive] = useState<ScheduledArchive | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreatingNewArchive, setIsCreatingNewArchive] = useState(false);
+  const [isTogglingSchedule, setIsTogglingSchedule] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -21,12 +23,17 @@ export const ArchiveDetailPage: React.FC = () => {
   const loadArchiveDetails = async (archiveId: string) => {
     try {
       setIsLoading(true);
-      const [archiveData, pagesData] = await Promise.all([
+      const [archiveData, pagesData, scheduledArchives] = await Promise.all([
         archiveApi.getArchive(archiveId),
-        archiveApi.getArchivePages(archiveId)
+        archiveApi.getArchivePages(archiveId),
+        schedulerApi.getScheduledArchives()
       ]);
       setArchive(archiveData);
       setPages(pagesData);
+      
+      // Find if this URL has an active scheduled archive
+      const scheduled = scheduledArchives.find(sa => sa.url === archiveData.rootUrl && sa.isActive);
+      setScheduledArchive(scheduled || null);
     } catch (err) {
       setError('Failed to load archive details');
     } finally {
@@ -49,6 +56,30 @@ export const ArchiveDetailPage: React.FC = () => {
       setError('Failed to create new archive. Please try again.');
     } finally {
       setIsCreatingNewArchive(false);
+    }
+  };
+
+  const handleToggleSchedule = async () => {
+    if (!archive) return;
+
+    setIsTogglingSchedule(true);
+    try {
+      if (scheduledArchive) {
+        // Disable existing schedule
+        await schedulerApi.toggleScheduledArchive(scheduledArchive.id);
+        setScheduledArchive(null);
+      } else {
+        // Create new weekly schedule
+        const newScheduled = await schedulerApi.createScheduledArchive({
+          url: archive.rootUrl,
+          cronSchedule: '0 0 * * 0' // Weekly on Sunday at midnight
+        });
+        setScheduledArchive(newScheduled);
+      }
+    } catch (err) {
+      setError('Failed to update automatic archiving. Please try again.');
+    } finally {
+      setIsTogglingSchedule(false);
     }
   };
 
@@ -94,14 +125,51 @@ export const ArchiveDetailPage: React.FC = () => {
                 <Globe className="h-6 w-6 text-gray-400" />
                 <h1 className="text-2xl font-bold text-gray-900">{archive.domain}</h1>
               </div>
-              <p className="text-blue-600 hover:text-blue-700 mb-4">
+              <p className="text-blue-600 hover:text-blue-700 mb-2">
                 <a href={archive.rootUrl} target="_blank" rel="noopener noreferrer" className="flex items-center space-x-1">
                   <span>{archive.rootUrl}</span>
                   <ExternalLink className="h-4 w-4" />
                 </a>
               </p>
+              {scheduledArchive && (
+                <div className="flex items-center space-x-2 text-sm text-green-600 mb-4">
+                  <Calendar className="h-4 w-4" />
+                  <span>Automatic archiving enabled (Weekly)</span>
+                  {scheduledArchive.nextRun && (
+                    <span className="text-gray-500">
+                      • Next: {new Date(scheduledArchive.nextRun).toLocaleDateString()}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
             <div className="flex items-center space-x-3">
+              <button
+                onClick={handleToggleSchedule}
+                disabled={isTogglingSchedule}
+                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                  scheduledArchive 
+                    ? 'bg-orange-600 text-white hover:bg-orange-700' 
+                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                }`}
+              >
+                {isTogglingSchedule ? (
+                  <>
+                    <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                    <span>Updating...</span>
+                  </>
+                ) : scheduledArchive ? (
+                  <>
+                    <CalendarOff className="h-4 w-4" />
+                    <span>Disable Auto-Archive</span>
+                  </>
+                ) : (
+                  <>
+                    <Calendar className="h-4 w-4" />
+                    <span>Enable Weekly Auto-Archive</span>
+                  </>
+                )}
+              </button>
               <button
                 onClick={handleReArchive}
                 disabled={isCreatingNewArchive}

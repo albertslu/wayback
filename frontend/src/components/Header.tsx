@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Archive, Home, Clock } from 'lucide-react';
+import { Archive, Home, Clock, Calendar } from 'lucide-react';
 
 export const Header: React.FC = () => {
   const location = useLocation();
@@ -47,6 +47,17 @@ export const Header: React.FC = () => {
             >
               <Clock className="h-4 w-4" />
               <span>Archives</span>
+            </Link>
+            <Link
+              to="/scheduler"
+              className={`flex items-center space-x-1 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                isActive('/scheduler') 
+                  ? 'bg-gradient-to-r from-indigo-100 to-cyan-100 text-indigo-700' 
+                  : 'text-gray-600 hover:text-indigo-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-cyan-50'
+              }`}
+            >
+              <Calendar className="h-4 w-4" />
+              <span>Scheduler</span>
             </Link>
           </nav>
         </div>

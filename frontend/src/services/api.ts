@@ -72,6 +72,34 @@ export interface DomainGroup {
   versions: Archive[];
 }
 
+export interface ScheduledArchive {
+  id: string;
+  url: string;
+  domain: string;
+  cronSchedule: string;
+  isActive: boolean;
+  lastRun: string | null;
+  nextRun: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateScheduledArchiveRequest {
+  url: string;
+  cronSchedule?: string;
+}
+
+export interface SchedulerStatus {
+  totalJobs: number;
+  runningJobs: number;
+  jobs: Array<{
+    id: string;
+    url: string;
+    schedule: string;
+    isRunning: boolean;
+  }>;
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   data: T;
@@ -111,6 +139,43 @@ export const archiveApi = {
   // Get archived content URL
   getArchivedContentUrl: (archiveId: string, path: string): string => {
     return `${API_BASE_URL}/archives/${archiveId}/serve/${path}`;
+  },
+};
+
+export const schedulerApi = {
+  // Get all scheduled archives
+  getScheduledArchives: async (): Promise<ScheduledArchive[]> => {
+    const response = await api.get<ApiResponse<ScheduledArchive[]>>('/scheduler/scheduled-archives');
+    return response.data.data;
+  },
+
+  // Create new scheduled archive
+  createScheduledArchive: async (data: CreateScheduledArchiveRequest): Promise<ScheduledArchive> => {
+    const response = await api.post<ApiResponse<ScheduledArchive>>('/scheduler/scheduled-archives', data);
+    return response.data.data;
+  },
+
+  // Update scheduled archive
+  updateScheduledArchive: async (id: string, updates: { cronSchedule?: string; isActive?: boolean }): Promise<ScheduledArchive> => {
+    const response = await api.put<ApiResponse<ScheduledArchive>>(`/scheduler/scheduled-archives/${id}`, updates);
+    return response.data.data;
+  },
+
+  // Delete scheduled archive
+  deleteScheduledArchive: async (id: string): Promise<void> => {
+    await api.delete(`/scheduler/scheduled-archives/${id}`);
+  },
+
+  // Toggle scheduled archive on/off
+  toggleScheduledArchive: async (id: string): Promise<ScheduledArchive> => {
+    const response = await api.post<ApiResponse<ScheduledArchive>>(`/scheduler/scheduled-archives/${id}/toggle`);
+    return response.data.data;
+  },
+
+  // Get scheduler status
+  getSchedulerStatus: async (): Promise<SchedulerStatus> => {
+    const response = await api.get<ApiResponse<SchedulerStatus>>('/scheduler/status');
+    return response.data.data;
   },
 };
 
