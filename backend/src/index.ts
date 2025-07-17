@@ -32,6 +32,7 @@ const allowedOrigins = [
   'http://localhost:5173', 
   'http://localhost:3000',
   /^https:\/\/.*\.vercel\.app$/,  // Allow all Vercel domains
+  'https://wayback-pio1imjmr-albert-lus-projects-aad2419e.vercel.app', // Your specific Vercel URL
 ];
 
 if (process.env.FRONTEND_URL) {
@@ -39,7 +40,30 @@ if (process.env.FRONTEND_URL) {
 }
 
 app.use(cors({
-  origin: allowedOrigins,
+  origin: (origin, callback) => {
+    console.log('CORS request from origin:', origin);
+    console.log('Allowed origins:', allowedOrigins);
+    
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Check if origin is allowed
+    const isAllowed = allowedOrigins.some(allowedOrigin => {
+      if (typeof allowedOrigin === 'string') {
+        return allowedOrigin === origin;
+      } else if (allowedOrigin instanceof RegExp) {
+        return allowedOrigin.test(origin);
+      }
+      return false;
+    });
+    
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      console.log('CORS: Origin not allowed:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 app.use(morgan('combined'));
