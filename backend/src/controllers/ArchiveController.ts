@@ -180,10 +180,9 @@ export class ArchiveController {
         content = await this.archiveService.rewriteLinksForServing(htmlContent, id);
       }
 
-      // Set headers to allow iframe embedding
-      res.setHeader('X-Frame-Options', 'SAMEORIGIN');
-      const port = process.env.PORT || '3001';
-      res.setHeader('Content-Security-Policy', `frame-ancestors 'self' http://localhost:5173 http://localhost:${port}`);
+      // Set headers to allow iframe embedding from any origin
+      // Remove X-Frame-Options entirely to allow embedding, use CSP instead
+      res.setHeader('Content-Security-Policy', `frame-ancestors *`);
       res.setHeader('Access-Control-Allow-Origin', '*');
       res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
       res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
