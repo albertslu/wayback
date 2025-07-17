@@ -3,3 +3,9 @@ node_modules
 .env
 
 /generated/prisma
+
+# Build output - don't commit compiled JavaScript files
+dist/
+build/
+src/**/*.js
+src/**/*.js.map

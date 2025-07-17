@@ -3,6 +3,7 @@ import { WebCrawler } from './WebCrawler';
 import { FileManager } from '../utils/FileManager';
 import { createError } from '../middleware/errorHandler';
 import path from 'path';
+import * as cheerio from 'cheerio';
 
 export class ArchiveService {
   private prisma: PrismaClient;
@@ -133,5 +134,88 @@ export class ArchiveService {
     } catch (error) {
       throw createError('File not found', 404);
     }
+  }
+
+  async rewriteLinksForServing(htmlContent: string, archiveId: string): Promise<string> {
+    const $ = cheerio.load(htmlContent);
+
+    // Get the base URL for the archive server with full domain
+    const port = process.env.PORT || '3001';
+    const baseArchiveUrl = `http://localhost:${port}/api/archives/${archiveId}/serve`;
+
+    // Get all archived pages for this archive to check which links should be rewritten
+    const pages = await this.prisma.page.findMany({
+      where: { archiveId },
+      select: { url: true, filePath: true }
+    });
+
+    // Create mappings for URL to file path lookups
+    const originalUrlToFilePath = new Map<string, string>();
+    const pathToFilePath = new Map<string, string>();
+    
+    for (const page of pages) {
+      const url = new URL(page.url);
+      originalUrlToFilePath.set(page.url, page.filePath);
+      // Map both the pathname and pathname without leading slash
+      pathToFilePath.set(url.pathname, page.filePath);
+      if (url.pathname.startsWith('/')) {
+        pathToFilePath.set(url.pathname.substring(1), page.filePath);
+      }
+    }
+
+    // Update all internal links to include the archive server path
+    $('a[href]').each((_: number, element: any) => {
+      const href = $(element).attr('href');
+      if (href) {
+        let targetFilePath: string | undefined;
+        
+        // Check if it's a relative path that maps to an archived page
+        if (href.startsWith('pages/') || href.endsWith('.html')) {
+          targetFilePath = href;
+        }
+        // Check if it's an absolute path starting with / that maps to an archived page
+        else if (href.startsWith('/') && pathToFilePath.has(href)) {
+          targetFilePath = pathToFilePath.get(href);
+        }
+        // Check if it's a relative path without leading slash
+        else if (!href.startsWith('http') && pathToFilePath.has('/' + href)) {
+          targetFilePath = pathToFilePath.get('/' + href);
+        }
+        // Check if it's a path without leading slash that maps directly
+        else if (!href.startsWith('http') && pathToFilePath.has(href)) {
+          targetFilePath = pathToFilePath.get(href);
+        }
+
+        // If we found a matching archived page, rewrite the link
+        if (targetFilePath) {
+          const newHref = `${baseArchiveUrl}/${targetFilePath}`;
+          $(element).attr('href', newHref);
+        }
+      }
+    });
+
+    // Also update relative asset paths to point to the archive server
+    $('img[src]').each((_: number, element: any) => {
+      const src = $(element).attr('src');
+      if (src && src.startsWith('assets/')) {
+        $(element).attr('src', `${baseArchiveUrl}/${src}`);
+      }
+    });
+
+    $('link[href]').each((_: number, element: any) => {
+      const href = $(element).attr('href');
+      if (href && href.startsWith('assets/')) {
+        $(element).attr('href', `${baseArchiveUrl}/${href}`);
+      }
+    });
+
+    $('script[src]').each((_: number, element: any) => {
+      const src = $(element).attr('src');
+      if (src && src.startsWith('assets/')) {
+        $(element).attr('src', `${baseArchiveUrl}/${src}`);
+      }
+    });
+
+    return $.html();
   }
 } 

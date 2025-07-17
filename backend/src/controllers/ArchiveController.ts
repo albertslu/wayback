@@ -114,7 +114,7 @@ export class ArchiveController {
       const { id } = req.params;
       const filePath = req.params[0]; // Captures the wildcard path
 
-      const content = await this.archiveService.serveArchivedFile(id, filePath);
+      let content: Buffer | string = await this.archiveService.serveArchivedFile(id, filePath);
 
       // Set appropriate content type based on file extension
       const ext = filePath.split('.').pop()?.toLowerCase();
@@ -131,9 +131,16 @@ export class ArchiveController {
         ico: 'image/x-icon'
       };
 
+      // For HTML files, rewrite internal links to include the archive server path
+      if (ext === 'html') {
+        const htmlContent = content.toString('utf-8');
+        content = await this.archiveService.rewriteLinksForServing(htmlContent, id);
+      }
+
       // Set headers to allow iframe embedding
       res.setHeader('X-Frame-Options', 'SAMEORIGIN');
-      res.setHeader('Content-Security-Policy', "frame-ancestors 'self' http://localhost:5173 http://localhost:3000");
+      const port = process.env.PORT || '3001';
+      res.setHeader('Content-Security-Policy', `frame-ancestors 'self' http://localhost:5173 http://localhost:${port}`);
       res.setHeader('Access-Control-Allow-Origin', '*');
       res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
       res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');

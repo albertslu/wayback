@@ -53,6 +53,7 @@ export class WebCrawler {
       const pages: PageData[] = [];
       let totalAssets = 0;
 
+      // First pass: crawl all pages
       while (urlsToVisit.length > 0 && pages.length < this.maxPages) {
         const currentUrl = urlsToVisit.shift()!;
         
@@ -79,6 +80,9 @@ export class WebCrawler {
           console.error(`❌ Error crawling ${currentUrl}:`, error);
         }
       }
+
+      // Second pass: update all internal links in archived pages
+      await this.updateInternalLinks(pages, baseUrl, archivePath);
 
       return { pages, totalAssets };
     } finally {
@@ -312,5 +316,47 @@ export class WebCrawler {
     }
     
     return this.fileManager.sanitizeFilename(filename);
+  }
+
+  private async updateInternalLinks(pages: PageData[], baseUrl: URL, archivePath: string): Promise<void> {
+    // Create a mapping of original URLs to local file paths
+    const urlToFileMap = new Map<string, string>();
+    
+    for (const page of pages) {
+      urlToFileMap.set(page.url, page.filePath);
+    }
+
+    // Update each page's HTML to fix internal links
+    for (const page of pages) {
+      try {
+        const fullPath = path.join(archivePath, page.filePath);
+        const htmlContent = await this.fileManager.readFile(fullPath);
+        const $ = cheerio.load(htmlContent);
+
+        // Process all anchor tags
+        $('a[href]').each((_, element) => {
+          const href = $(element).attr('href');
+          if (href) {
+            const resolvedUrl = this.resolveUrl(href, page.url);
+            
+            // Check if this is an internal link to a crawled page
+            if (resolvedUrl && this.isSameDomain(resolvedUrl, baseUrl) && urlToFileMap.has(resolvedUrl)) {
+              const localFilePath = urlToFileMap.get(resolvedUrl)!;
+              // Update the href to point to the archive server endpoint
+              // This will be served by the backend at /api/archives/:id/serve/:path
+              $(element).attr('href', localFilePath);
+            }
+          }
+        });
+
+        // Save the updated HTML
+        const updatedHtml = $.html();
+        await this.fileManager.writeFile(fullPath, updatedHtml);
+        
+        console.log(`🔗 Updated internal links for: ${page.url}`);
+      } catch (error) {
+        console.error(`❌ Error updating links for ${page.url}:`, error);
+      }
+    }
   }
 } 
